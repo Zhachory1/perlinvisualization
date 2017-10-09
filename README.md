@@ -1,8 +1,9 @@
 # Perlin Noise Visualization
 
-To compile
+This implementation showcases the Perlin noise algorithm with different shapes
+and visualizations. It uses Three.js to interact with WebGL to create these visualizations. Also uses various other libraries for parameter adjustments, controls, and animation stats.
 
-[TODO]
+### See results
 
 To see results, in top directory, run the following command
 
