@@ -1,24 +1,20 @@
 /******************************************************************************/
-// Square Mountains
+// Base
 
 var Variables = function() {
   this.octaves = 8;
-  this.persistance = 1;
+  this.persistence = 1;
   this.amplitude = 100;
-
-  this.angle = 1;
   this.speedInc = 0.1;
   this.xoff = 0.2;
   this.yoff = 0.2;
-
   this.rows = 30;
   this.cols = 100;
-
   this.draw = true;
 }
 
 var container, stats, terrain;
-var camera, scene, renderer, controls;
+var camera, scene, renderer, controls, gui;
 var items;
 var targetRotation = 0;
 var targetRotationOnMouseDown = 0;
@@ -26,13 +22,43 @@ var mouseX = 0;
 var mouseXOnMouseDown = 0;
 var windowHalfX = window.innerWidth / 2;
 var vars = new Variables();
-var gui = new dat.GUI();
 
 var speed = 0;
 
-init();
-animate();
+// Set up container for visualizations
+container = document.createElement( 'div' );
+document.body.appendChild( container );
 
+// Show stats of page
+stats = new Stats();
+container.appendChild( stats.dom );
+
+// Handler for window resize to resize canvas and camera aspect
+window.addEventListener( 'resize', onWindowResize, false );
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+// Handler to catch keyboard input
+document.body.onkeyup = function(e) {
+  console.log(e.keyCode);
+  if(e.keyCode == 32 || e.keyCode == 13) { // Space or enter
+    vars.draw = !vars.draw;
+  }
+  if(e.keyCode == 49 || e.keyCode == 97) { // One key on top row or numpad
+    console.log("One was pressed");
+  }
+  if(e.keyCode == 50 || e.keyCode == 98) { // Two key on top row or numpad
+    console.log("Two was pressed");
+  }
+  if(e.keyCode == 51 || e.keyCode == 99) { // Three key on top row or numpad
+    console.log("Three was pressed");
+  }
+}
+
+// Basic functions to add shapes to scene
 function addShape( shape, x, y, z, rx, ry, rz, s ) {
   var geometry = new THREE.ShapeGeometry( shape, 1000 );
   var mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial( { color: 0x202020, side: THREE.DoubleSide } ) );
@@ -55,48 +81,15 @@ function addLineShape( shape, x, y, z, rx, ry, rz, s ) {
   return line;
 }
 
-function removeEntity(object) {
-  var selectedObject = scene.getObjectByName(object.name);
-  scene.remove( selectedObject );
-  animate();
-}
-
-function init() {
-  container = document.createElement( 'div' );
-  document.body.appendChild( container );
-
-  gui.add(vars, 'octaves').min(1).max(8).step(1);
-  gui.add(vars, 'persistance').min(0).max(1).step(0.05);
-  gui.add(vars, 'amplitude').min(0).max(200).step(10);
-  gui.add(vars, 'speedInc').min(0).max(0.2).step(0.01);
-  var angleChange = gui.add(vars, 'angle').min(1).max(16).step(0.5);
-  gui.add(vars, 'xoff').min(0).max(0.2).step(0.01);
-  gui.add(vars, 'yoff').min(0).max(0.2).step(0.01);
-  gui.add(vars, 'cols').min(10).max(100).step(1);
-  gui.add(vars, 'draw');
-
-  angleChange.onChange(function(value) {
-    for (var i = items.length - 1; i >= 0; i--) {
-      removeEntity(items[i]);
-    }
-    terrain = [];
-    items = [];
-    for (var x = 0; x < vars.rows; x++) {
-      terrain[x] = [];
-      var pts = [new THREE.Vector2(0, 0), new THREE.Vector2(400, 1), new THREE.Vector2(400, 0)];
-      var basicShape = new THREE.Shape( pts );
-      addShape(basicShape, 0, 0, (x*(400/vars.rows))-400, 0, -Math.PI/vars.angle, 0, 1);
-    }
-  });
-
-  scene = new THREE.Scene();
-
+function setCamera(x, y, z) {
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-  camera.position.set(0, 500, 0);
+  camera.position.set(x, y, z);
   camera.up = new THREE.Vector3(0,1,0);
   camera.lookAt( new THREE.Vector3(0,0,0) );
+}
 
-  var ambient = new THREE.AmbientLight( { color: 0x404040, intensity: 0.75 }); // soft white light
+function setSceneAndRenderer(ambientColor, ambientIntesity) {
+  var ambient = new THREE.AmbientLight( { color: ambientColor, intensity: ambientIntesity }); // soft white light
   scene.add( ambient );
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -106,20 +99,44 @@ function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
+}
 
+function setControls(enableDamping, dampingFactor, enableZoom) {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.25;
-  controls.enableZoom = true;
-
-  stats = new Stats();
-  container.appendChild( stats.dom );
-  window.addEventListener( 'resize', onWindowResize, false );
-  document.body.onkeyup = function(e){
-      if(e.keyCode == 32){
-          vars.draw = !vars.draw;
-      }
+  controls.enableDamping = enableDamping;
+  if(enableDamping) {
+    controls.dampingFactor = dampingFactor;
   }
+  controls.enableZoom = enableZoom;
+}
+
+// The first shape to be shown will be this Square Mountains
+SquareMountainsInit();
+SquareMountainsAnimate();
+/******************************************************************************/
+
+
+/******************************************************************************/
+// Square Mountains
+function SquareMountainsInit() {
+  gui = new dat.GUI();
+  gui.add(vars, 'octaves').min(1).max(8).step(1);
+  gui.add(vars, 'persistence').min(0).max(1).step(0.05);
+  gui.add(vars, 'amplitude').min(0).max(200).step(10);
+  gui.add(vars, 'speedInc').min(0).max(0.2).step(0.01);
+  gui.add(vars, 'xoff').min(0).max(0.2).step(0.01);
+  gui.add(vars, 'yoff').min(0).max(0.2).step(0.01);
+  gui.add(vars, 'cols').min(10).max(100).step(1);
+  gui.add(vars, 'draw');
+
+  scene = new THREE.Scene();
+
+  setCamera(0, 500, 0);
+
+  setSceneAndRenderer(0x404040, 0.75);
+
+  setControls(true, 0.25, true);
+
   // Set up item shapes
   terrain = [];
   items = [];
@@ -127,7 +144,7 @@ function init() {
     terrain[x] = [];
     var pts = [new THREE.Vector2(0, 0), new THREE.Vector2(400, 1), new THREE.Vector2(400, 0)];
     var basicShape = new THREE.Shape( pts );
-    var objs = addShape(basicShape, 0, 0, (x*(400/vars.rows))-400, 0, -Math.PI/vars.angle, 0, 1);
+    var objs = addShape(basicShape, 0, 0, (x*(400/vars.rows))-400, 0, -Math.PI, 0, 1);
     items.push(objs[0])
     items.push(objs[1])
   }
@@ -136,8 +153,8 @@ function init() {
 
 }
 
-function animate() {
-  requestAnimationFrame( animate );
+function SquareMountainsAnimate() {
+  stats.begin();
   if( vars.draw ) {
     speed -= vars.speedInc;
     var yoff = speed;
@@ -147,7 +164,7 @@ function animate() {
         terrain[vars.rows-y][x] = (
           ((x<10)?(-Math.cos((x/10)*Math.PI)/2)+0.5:1)*
           ((x>vars.cols-10)?(-Math.cos(((vars.cols-x)/10)*Math.PI)/2)+0.5:1)*
-          (noise2(xoff,yoff,octaves=vars.octaves,persistance=vars.persistance)*
+          (noise2(xoff,yoff,octaves=vars.octaves,persistence=vars.persistence)*
            ((vars.amplitude*(Math.sin((y/7)+11)))+vars.amplitude))
         );
         xoff += vars.xoff;
@@ -173,24 +190,22 @@ function animate() {
       items[(y*2)+1].geometry = geometry.clone();
     }
   }
+  stats.end();
+
+  requestAnimationFrame( SquareMountainsAnimate );
 
   controls.update();
 
   renderer.render( scene, camera );
 }
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize( window.innerWidth, window.innerHeight );
-}
 /******************************************************************************/
+
 
 /******************************************************************************/
 // // Square squiggly edges
 // var Variables = function() {
 //   this.octaves = 8;
-//   this.persistance = 1;
+//   this.persistence = 1;
 //   this.amplitude = 100;
 
 //   this.angle = 1;
@@ -231,7 +246,7 @@ function onWindowResize() {
 //   document.body.appendChild( container );
 
 //   gui.add(vars, 'octaves').min(1).max(8).step(1);
-//   gui.add(vars, 'persistance').min(0).max(1).step(0.05);
+//   gui.add(vars, 'persistence').min(0).max(1).step(0.05);
 //   gui.add(vars, 'amplitude').min(0).max(200).step(10);
 //   gui.add(vars, 'speedInc').min(0).max(0.2).step(0.01);
 //   // var angleChange = gui.add(vars, 'angle').min(1).max(16).step(0.5);
@@ -292,14 +307,14 @@ function onWindowResize() {
 //     for (var x = 0; x < 20; x++) {
 //       var point = new THREE.Vector2(0, x*stepSize)
 //       terrain[0].push(dist(0, 0, point.x, point.y)*(0.1)*
-//         noise2(xoff,yoff,octaves=vars.octaves,persistance=vars.persistance));
+//         noise2(xoff,yoff,octaves=vars.octaves,persistence=vars.persistence));
 //       xoff += vars.xoff;
 //     }
 //     terrain[1] = []
 //     for (var x = 0; x < 20; x++) {
 //       var point = new THREE.Vector2(400, x*stepSize)
 //       terrain[1].push(dist(0, 0, point.x, point.y)*(0.1)*
-//         noise2(xoff,yoff,octaves=vars.octaves,persistance=vars.persistance));
+//         noise2(xoff,yoff,octaves=vars.octaves,persistence=vars.persistence));
 //       xoff += vars.xoff;
 //     }
 
