@@ -12,6 +12,12 @@ var Variables = function() {
   this.draw = true;
 }
 
+CurrentState = {
+  MOUNTAIN: 0,
+  SQUARE: 1,
+  LINE: 2,
+}
+
 var container, stats, terrain, items;
 var camera, scene, renderer, controls, gui;
 var targetRotation = 0;
@@ -23,13 +29,16 @@ var vars = new Variables();
 
 var speed = 0;
 
+var stopAnimation = false;
+var state = CurrentState.MOUNTAIN;
+var currentRequest;
+
 // Set up container for visualizations
 container = document.createElement( 'div' );
-document.body.appendChild( container );
-
-// Show stats of page
+container.id = "container";
 stats = new Stats();
-container.appendChild( stats.dom );
+document.body.appendChild( container );
+document.body.appendChild( stats.dom );
 
 // Handler for window resize to resize canvas and camera aspect
 window.addEventListener( 'resize', onWindowResize, false );
@@ -41,19 +50,39 @@ function onWindowResize() {
 
 // Handler to catch keyboard input
 document.body.onkeyup = function(e) {
-  console.log(e.keyCode);
   if(e.keyCode == 32 || e.keyCode == 13) { // Space or enter
     vars.draw = !vars.draw;
   }
   if(e.keyCode == 49 || e.keyCode == 97) { // One key on top row or numpad
-    console.log("One was pressed");
+    stopAnimation = true;
+    state = CurrentState.MOUNTAIN;
+    destroy();
+    SquareMountainsInit();
   }
   if(e.keyCode == 50 || e.keyCode == 98) { // Two key on top row or numpad
-    console.log("Two was pressed");
+    stopAnimation = true;
+    state = CurrentState.SQUARE;
+    destroy();
+    SquigglySquareInit();
   }
   if(e.keyCode == 51 || e.keyCode == 99) { // Three key on top row or numpad
+    stopAnimation = true;
     console.log("Three was pressed");
   }
+}
+
+function destroy() {
+  cancelAnimationFrame(currentRequest);// Stop the animation
+  scene = null;
+  camera = null;
+  controls = null;
+  var guiElem = document.querySelector("body > div.dg.ac");
+  guiElem.removeChild(guiElem.firstChild);
+  empty(container);
+}
+
+function empty(elem) {
+  while (elem.lastChild) elem.removeChild(elem.lastChild);
 }
 
 // Basic functions to add shapes to scene
@@ -82,8 +111,8 @@ function addLineShape( shape, x, y, z, rx, ry, rz, s ) {
 function setCamera(x, y, z) {
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
   camera.position.set(x, y, z);
-  camera.up = new THREE.Vector3(0,1,0);
-  camera.lookAt( new THREE.Vector3(0,0,0) );
+  camera.up = new THREE.Vector3(0, 1, 0);
+  camera.lookAt( new THREE.Vector3(0, 0, 0) );
 }
 
 function setSceneAndRenderer(ambientColor, ambientIntesity) {
@@ -122,8 +151,7 @@ function dist(x1, y1, x2, y2) {
 }
 
 // The first shape to be shown will be this Square Mountains
-SquigglySquareInit();
-SquigglySquareAnimate();
+SquareMountainsInit();
 /******************************************************************************/
 
 

@@ -11,11 +11,8 @@ function SquigglySquareInit() {
   gui.add(vars, 'draw');
 
   scene = new THREE.Scene();
-
   setCamera(200, 200, 500);
-
   setSceneAndRenderer(0x404040, 0.75);
-
   setControls(true, 0.25, true, 200, 200, 0);
 
   terrain = [];
@@ -25,12 +22,17 @@ function SquigglySquareInit() {
              new THREE.Vector2(400, 0), new THREE.Vector2(  0,   0)];
   var basicShape = new THREE.Shape( pts );
   [items[0], items[1]] = addShape(basicShape, 0, 0, 0, 0, 0, 0, 1);
+
   renderer.render( scene, camera );
+  stopAnimation = false;
+  currentRequest = SquigglySquareAnimate;
+  SquigglySquareAnimate();
 }
 
 function SquigglySquareAnimate() {
   stats.begin();
-  if( vars.draw ) {
+  console.log("SqSq");
+  if( vars.draw && !stopAnimation && state == CurrentState.SQUARE) {
     speed -= vars.speedInc;
     var yoff = 0;
     //  BOTTOM and LEFT, TOP and RIGHT
@@ -75,13 +77,11 @@ function SquigglySquareAnimate() {
     items[0].geometry = geometry.clone();
     items[1].geometry.dispose();
     items[1].geometry = geometry.clone();
+
+    requestAnimationFrame( SquigglySquareAnimate );
+    controls.update();
+    renderer.render( scene, camera );
   }
   stats.end();
-
-  requestAnimationFrame( SquigglySquareAnimate );
-
-  controls.update();
-
-  renderer.render( scene, camera );
 }
 /******************************************************************************/

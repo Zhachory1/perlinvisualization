@@ -12,12 +12,9 @@ function SquareMountainsInit() {
   gui.add(vars, 'draw');
 
   scene = new THREE.Scene();
-
   setCamera(0, 500, 0);
-
   setSceneAndRenderer(0x404040, 0.75);
-
-  setControls(true, 0.25, true);
+  setControls(true, 0.25, true, -200, -200, -200);
 
   // Set up item shapes
   terrain = [];
@@ -32,12 +29,14 @@ function SquareMountainsInit() {
   }
 
   renderer.render( scene, camera );
-
+  stopAnimation = false;
+  currentRequest = SquareMountainsAnimate;
+  SquareMountainsAnimate();
 }
 
 function SquareMountainsAnimate() {
   stats.begin();
-  if( vars.draw ) {
+  if( vars.draw && !stopAnimation && state == CurrentState.MOUNTAIN) {
     speed += vars.speedInc;
     var yoff = speed;
     for (var y = vars.rows; y > 0; y--) {
@@ -71,13 +70,11 @@ function SquareMountainsAnimate() {
       items[(y*2)+1].geometry.dispose();
       items[(y*2)+1].geometry = geometry.clone();
     }
+
+    requestAnimationFrame( SquareMountainsAnimate );
+    controls.update();
+    renderer.render( scene, camera );
   }
   stats.end();
-
-  requestAnimationFrame( SquareMountainsAnimate );
-
-  controls.update();
-
-  renderer.render( scene, camera );
 }
 /******************************************************************************/
