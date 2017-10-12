@@ -9,13 +9,21 @@ var Variables = function() {
   this.yoff = 0.1;
   this.rows = 30;
   this.cols = 100;
+  this.radius = 200,
+  this.widthSegments = 32,
+  this.heightSegments = 32,
+  this.phiStart = 0,
+  this.phiLength = Math.PI*2,
+  this.thetaStart = 0,
+  this.thetaLength = Math.PI
+
   this.draw = true;
 }
 
 CurrentState = {
   MOUNTAIN: 0,
   SQUARE: 1,
-  LINE: 2,
+  SPHERE: 2,
 }
 
 var container, stats, terrain, items;
@@ -67,7 +75,9 @@ document.body.onkeyup = function(e) {
   }
   if(e.keyCode == 51 || e.keyCode == 99) { // Three key on top row or numpad
     stopAnimation = true;
-    console.log("Three was pressed");
+    state = CurrentState.SPHERE;
+    destroy();
+    WavySphereInit();
   }
 }
 
@@ -146,8 +156,11 @@ function extend(arr1, arr2) {
   }
 }
 
-function dist(x1, y1, x2, y2) {
+function dist2d(x1, y1, x2, y2) {
   return Math.sqrt(Math.pow(y2-y1,2) + Math.pow(x2-x1,2))
+}
+function dist3d(x1, y1, z1, x2, y2, z2) {
+  return Math.sqrt(Math.pow(z2-z1,2) + Math.pow(y2-y1,2) + Math.pow(x2-x1,2))
 }
 
 function map(n, start1, stop1, start2, stop2, withinBounds) {

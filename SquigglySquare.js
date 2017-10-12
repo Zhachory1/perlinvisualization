@@ -42,8 +42,8 @@ function SquigglySquareAnimate() {
       var point1 = new THREE.Vector2(0, x*stepSize)
       var point2 = new THREE.Vector2(400, x*stepSize)
 
-      var point1_num = dist(0, 0, point1.x, point1.y) * vars.amplitude / 400;
-      var point2_num = dist(0, 0, point2.x, point2.y) * vars.amplitude / 400;
+      var point1_num = dist2d(0, 0, point1.x, point1.y) * vars.amplitude / 400;
+      var point2_num = dist2d(0, 0, point2.x, point2.y) * vars.amplitude / 400;
 
       terrain[0].push(
           (point1_num*
