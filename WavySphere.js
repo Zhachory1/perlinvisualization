@@ -18,7 +18,7 @@ function generateGeometry() {
 // Wavy Sphere
 function WavySphereInit() {
   gui = new dat.GUI();
-  // gui.add( vars, 'radius', 1, 30 ).onChange( generateGeometry );
+  gui.add( vars, 'radius', 100, 400 ).step( 10 ).onChange( generateGeometry );
   gui.add( vars, 'widthSegments', 10, 50 ).step( 1 ).onChange( generateGeometry );
   gui.add( vars, 'heightSegments', 10, 50 ).step( 1 ).onChange( generateGeometry );
 
@@ -30,9 +30,6 @@ function WavySphereInit() {
   terrain = [];
   items = [];
   // Set up item shapes
-  // var geometry = new THREE.SphereGeometry( 200, 32, 32 );
-  // var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-  // var sphere = new THREE.Mesh( geometry, material );
   mesh = new THREE.Object3D();
   mesh.add( new THREE.LineSegments(
     new THREE.SphereGeometry(),
