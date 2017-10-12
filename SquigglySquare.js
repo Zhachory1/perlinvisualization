@@ -31,28 +31,30 @@ function SquigglySquareInit() {
 
 function SquigglySquareAnimate() {
   stats.begin();
-  console.log("SqSq");
   if( vars.draw && !stopAnimation && state == CurrentState.SQUARE) {
     speed -= vars.speedInc;
     var yoff = 0;
     //  BOTTOM and LEFT, TOP and RIGHT
     var xoff = speed;
-    var stepSize = 20;
+    var stepSize = 10;
     terrain = [[], []]
-    for (var x = 0; x < 20; x++) {
+    for (var x = 0; x < 400/stepSize; x++) {
       var point1 = new THREE.Vector2(0, x*stepSize)
       var point2 = new THREE.Vector2(400, x*stepSize)
 
+      var point1_num = dist(0, 0, point1.x, point1.y) * vars.amplitude / 400;
+      var point2_num = dist(0, 0, point2.x, point2.y) * vars.amplitude / 400;
+
       terrain[0].push(
-          (dist(0, 0, point1.x, point1.y)*(vars.amplitude/500)*
-                    noise2(xoff,0,octaves=vars.octaves,persistence=vars.persistence))
-          -((vars.amplitude/500)/2));
+          (point1_num*
+            noise2(xoff,0,octaves=vars.octaves,persistence=vars.persistence))
+          -(point1_num/2));
       xoff += vars.xoff;
 
       terrain[1].push(
-          (dist(0, 0, point2.x, point2.y)*(vars.amplitude/500)*
-                    noise2(xoff,0,octaves=vars.octaves,persistence=vars.persistence))
-          -((vars.amplitude/500)/2));
+          (point2_num*
+            noise2(xoff,0,octaves=vars.octaves,persistence=vars.persistence))
+          -(point2_num/2));
       xoff += vars.xoff;
     }
 
@@ -60,11 +62,11 @@ function SquigglySquareAnimate() {
     var top = [];
     var bottom = [];
     var left = [];
-    for (var x = 0; x < 20; x++) {
-        bottom.push(new THREE.Vector2(x*stepSize, terrain[0][x]));
-        right.push(new THREE.Vector2(380+terrain[1][x], x*stepSize+20));
-        top.push(new THREE.Vector2(x*stepSize+20, 380+terrain[1][x]));
-        left.push(new THREE.Vector2(terrain[0][x], x*stepSize));
+    for (var x = 0; x < 400/stepSize; x++) {
+        bottom.push(new THREE.Vector2(x*stepSize, -terrain[0][x]));
+        right.push(new THREE.Vector2(400+terrain[1][x], x*stepSize));
+        top.push(new THREE.Vector2(x*stepSize, 400+terrain[1][x]));
+        left.push(new THREE.Vector2(-terrain[0][x], x*stepSize));
     }
     var points  = [];
     extend(points, top);
